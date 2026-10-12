@@ -147,7 +147,52 @@ struct GetLevelString {
     }
 };
 
+
 GLZ_ACTION_META(GetLevelString)
+
+struct Ping {
+    static constexpr auto ACTION_NAME = "PING";
+    static constexpr auto EDITOR_ACTION = false;
+    std::string action;
+    bool close = false;
+
+    Response run(LevelEditorLayer*) {
+        return Response::make_success(glz::generic("pong"));
+    }
+};
+
+GLZ_ACTION_META(Ping)
+
+struct GetObjectCount {
+    static constexpr auto ACTION_NAME = "GET_OBJECT_COUNT";
+    static constexpr auto EDITOR_ACTION = true;
+    std::string action;
+    bool close = false;
+
+    Response run(LevelEditorLayer* editor) {
+        return Response::make_success(glz::generic(
+            static_cast<int>(editor->m_objects ? editor->m_objects->count() : 0)
+        ));
+    }
+};
+
+GLZ_ACTION_META(GetObjectCount)
+
+struct GetSelectedObjectCount {
+    static constexpr auto ACTION_NAME = "GET_SELECTED_OBJECT_COUNT";
+    static constexpr auto EDITOR_ACTION = true;
+    std::string action;
+    bool close = false;
+
+    Response run(LevelEditorLayer* editor) {
+        auto selected = editor->m_editorUI->getSelectedObjects();
+        return Response::make_success(glz::generic(
+            static_cast<int>(selected ? selected->count() : 0)
+        ));
+    }
+};
+
+GLZ_ACTION_META(GetSelectedObjectCount)
 
 struct ReplaceLevelString {
     static constexpr auto ACTION_NAME = "REPLACE_LEVEL_STRING";
@@ -212,6 +257,9 @@ void on_message(websocketpp::connection_hdl hdl, WSServer::message_ptr msg) {
     CHECK_ACTION(Add, hdl)
     CHECK_ACTION(Remove, hdl)
     CHECK_ACTION(GetLevelString, hdl)
+    CHECK_ACTION(Ping, hdl)
+    CHECK_ACTION(GetObjectCount, hdl)
+    CHECK_ACTION(GetSelectedObjectCount, hdl)
     CHECK_ACTION(ReplaceLevelString, hdl)
 
     log::info("exiting message handler!");
